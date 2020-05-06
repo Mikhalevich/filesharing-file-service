@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = ".;proto";
+
+service FileService {
+  rpc Files(FilesRequest) returns (FilesResponse) {}
+}
+
+message FilesRequest {
+  string path = 1;
+}
+
+message File {
+    string name = 1;
+    int64 size = 2;
+    int64 modTime = 3;
+
+}
+
+message FilesResponse {
+  repeated File files = 1;
+}

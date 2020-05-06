@@ -1,11 +1,14 @@
 package main
 
 import (
+	"net"
 	"os"
 	"path"
 	"time"
 
+	"github.com/Mikhalevich/file_service/proto"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 type params struct {
@@ -65,6 +68,7 @@ func runCleaner(cleanTime, rootPath, permanentDirectory string, l *logrus.Logger
 
 	return nil
 }
+
 func main() {
 	logger := logrus.New()
 	logger.SetOutput(os.Stdout)
@@ -86,5 +90,24 @@ func main() {
 			logger.Errorln(err)
 			return
 		}
+	}
+
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		logger.Errorln(err)
+		return
+	}
+
+	s := grpc.NewServer()
+
+	proto.RegisterFileServiceServer(s, &fileServer{
+		storage:     newFileStorage(p.root),
+		tempStorage: newFileStorage(p.temp),
+	})
+
+	err = s.Serve(lis)
+	if err != nil {
+		logger.Errorln(err)
+		return
 	}
 }
