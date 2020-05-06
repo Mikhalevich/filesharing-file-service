@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -9,14 +10,30 @@ import (
 
 type params struct {
 	root      string
+	temp      string
 	permanent string
 	cleanTime string
 }
 
-func loadParams() *params {
+func loadParams() (*params, error) {
 	rootDir := os.Getenv("ROOT_DIR")
 	if rootDir == "" {
 		rootDir = "storage"
+	}
+
+	err := os.MkdirAll(rootDir, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+
+	tempDir := os.Getenv("TEMP_DIR")
+	if tempDir == "" {
+		tempDir = path.Join(os.TempDir(), "Duplo")
+	}
+
+	err = os.MkdirAll(tempDir, os.ModePerm)
+	if err != nil {
+		return nil, err
 	}
 
 	permanentDir := os.Getenv("PERMANENT_DIRECTORY")
@@ -31,9 +48,10 @@ func loadParams() *params {
 
 	return &params{
 		root:      rootDir,
+		temp:      tempDir,
 		permanent: permanentDir,
 		cleanTime: cleanTime,
-	}
+	}, nil
 }
 
 func runCleaner(cleanTime, rootPath, permanentDirectory string, l *logrus.Logger) error {
@@ -54,12 +72,16 @@ func main() {
 		FullTimestamp: true,
 	})
 
-	p := loadParams()
+	p, err := loadParams()
+	if err != nil {
+		logger.Errorln(err)
+		return
+	}
 
 	logger.Infof("running file service with params: root_direcotry = \"%s\", permanent_directory = \"%s\", cleanTime = \"%s\"", p.root, p.permanent, p.cleanTime)
 
 	if p.cleanTime != "" {
-		err := runCleaner(p.cleanTime, p.root, p.permanent, logger)
+		err = runCleaner(p.cleanTime, p.root, p.permanent, logger)
 		if err != nil {
 			logger.Errorln(err)
 			return
