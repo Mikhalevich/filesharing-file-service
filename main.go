@@ -101,8 +101,9 @@ func main() {
 	s := grpc.NewServer()
 
 	proto.RegisterFileServiceServer(s, &fileServer{
-		storage:     newFileStorage(p.root),
-		tempStorage: newFileStorage(p.temp),
+		storage:            newFileStorage(p.root),
+		permanentDirectory: p.permanent,
+		tempStorage:        newFileStorage(p.temp),
 	})
 
 	err = s.Serve(lis)
