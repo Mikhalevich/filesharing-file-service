@@ -57,6 +57,7 @@ func (fs *fileServer) GetFile(req *proto.FileRequest, stream proto.FileService_G
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	buf := make([]byte, 4096)
 	for {
