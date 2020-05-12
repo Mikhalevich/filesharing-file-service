@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"os"
 	"path"
 
 	"github.com/Mikhalevich/file_service/filesystem"
@@ -49,12 +48,7 @@ func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest) (*proto.
 }
 
 func (fs *fileServer) GetFile(req *proto.FileRequest, stream proto.FileService_GetFileServer) error {
-	p := fs.makePath(req.GetStorage(), req.GetIsPermanent(), req.GetFileName())
-	if !fs.storage.IsExists(p) {
-		return errors.New("file doesn't exist")
-	}
-
-	file, err := os.Open(fs.storage.Join(p))
+	file, err := fs.storage.File(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
 	if err != nil {
 		return err
 	}
@@ -134,20 +128,20 @@ func (fs *fileServer) UploadFile(stream proto.FileService_UploadFileServer) erro
 		w.Close()
 	}()
 
-	dir := fs.makePath(metadata.GetStorage(), metadata.GetIsPermanent(), "")
-	fileName, err := fs.tempStorage.Store("", metadata.GetFileName(), r)
+	file, err := fs.tempStorage.Store("", metadata.GetFileName(), r)
 
 	if err != nil {
 		return err
 	}
 
-	err = fs.storage.Move(fs.tempStorage.Join(fileName), dir, fileName)
+	dir := fs.makePath(metadata.GetStorage(), metadata.GetIsPermanent(), "")
+	err = fs.storage.Move(file, dir, metadata.GetFileName())
 	if err != nil {
 		return err
 	}
 
 	stream.SendAndClose(&proto.File{
-		Name:    fileName,
+		Name:    file.Name(),
 		Size:    0,
 		ModTime: 0,
 	})

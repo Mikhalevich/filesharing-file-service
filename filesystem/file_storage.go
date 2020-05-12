@@ -92,69 +92,72 @@ func (fil fileInfoList) Exist(name string) bool {
 	return false
 }
 
+// Storage represent file manipulation fasade
 type Storage struct {
 	rootPath string
 }
 
+// NewStorage create a new Storage object with abs root path
 func NewStorage(root string) *Storage {
 	return &Storage{
 		rootPath: root,
 	}
 }
 
-func (s *Storage) root() string {
-	return s.rootPath
-}
-
-func (s *Storage) Join(p string) string {
+func (s *Storage) join(p string) string {
 	return path.Join(s.rootPath, p)
 }
 
-func (s *Storage) IsExists(p string) bool {
-	_, err := os.Stat(s.Join(p))
-	if err != nil {
-		return !os.IsNotExist(err)
-	}
-	return true
-}
+// func (s *Storage) IsExists(p string) bool {
+// 	_, err := os.Stat(s.Join(p))
+// 	if err != nil {
+// 		return !os.IsNotExist(err)
+// 	}
+// 	return true
+// }
 
 func (s *Storage) mkdir(dir string) error {
-	return os.Mkdir(s.Join(dir), os.ModePerm)
+	return os.Mkdir(s.join(dir), os.ModePerm)
 }
 
+// Files returns files from current storage directory
 func (s *Storage) Files(p string) fileInfoList {
-	return newDirectory(s.Join(p)).list()
+	return newDirectory(s.join(p)).list()
 }
 
-func (s *Storage) Store(dir string, fileName string, data io.Reader) (string, error) {
-	dirPath := s.Join(dir)
+// File return existing file with name fileName insice directory dir
+func (s *Storage) File(dir, fileName string) (*File, error) {
+	return openFile(s.join(path.Join(dir, fileName)))
+}
+
+// Store save file with fileName inside direcory dir, returns a newly created file object
+func (s *Storage) Store(dir string, fileName string, data io.Reader) (*File, error) {
+	dirPath := s.join(dir)
 	uniqueName := newDirectory(dirPath).uniqueName(fileName)
-	f, err := os.Create(path.Join(dirPath, uniqueName))
+	f, err := createFile(path.Join(dirPath, uniqueName))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer f.Close()
 
 	_, err = io.Copy(f, data)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return uniqueName, nil
+	return f, nil
 }
 
-func (s *Storage) Move(filePath string, dir string, fileName string) error {
-	dirPath := s.Join(dir)
+func (s *Storage) Move(file *File, dir string, fileName string) error {
+	dirPath := s.join(dir)
 	uniqueName := newDirectory(dirPath).uniqueName(fileName)
-	return os.Rename(filePath, path.Join(dirPath, uniqueName))
+	return file.move(path.Join(dirPath, uniqueName))
 }
 
 func (s *Storage) Remove(dir string, fileName string) error {
-	dirPath := s.Join(dir)
-	files := newDirectory(dirPath).list()
-	if !files.Exist(fileName) {
+	f, err := openFile(s.join(path.Join(dir, fileName)))
+	if err != nil {
 		return errNotExists
 	}
-
-	return os.Remove(path.Join(dirPath, fileName))
+	return f.remove()
 }
