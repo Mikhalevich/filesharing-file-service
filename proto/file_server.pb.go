@@ -8,15 +8,14 @@ package proto
 
 import (
 	context "context"
-	reflect "reflect"
-	sync "sync"
-
 	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
+	sync "sync"
 )
 
 const (
@@ -297,6 +296,86 @@ func (x *Chunk) GetContent() []byte {
 	return nil
 }
 
+type FileUploadRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to FileChunk:
+	//	*FileUploadRequest_Metadata
+	//	*FileUploadRequest_Content
+	FileChunk isFileUploadRequest_FileChunk `protobuf_oneof:"fileChunk"`
+}
+
+func (x *FileUploadRequest) Reset() {
+	*x = FileUploadRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_file_server_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FileUploadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileUploadRequest) ProtoMessage() {}
+
+func (x *FileUploadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_file_server_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileUploadRequest.ProtoReflect.Descriptor instead.
+func (*FileUploadRequest) Descriptor() ([]byte, []int) {
+	return file_file_server_proto_rawDescGZIP(), []int{5}
+}
+
+func (m *FileUploadRequest) GetFileChunk() isFileUploadRequest_FileChunk {
+	if m != nil {
+		return m.FileChunk
+	}
+	return nil
+}
+
+func (x *FileUploadRequest) GetMetadata() *FileRequest {
+	if x, ok := x.GetFileChunk().(*FileUploadRequest_Metadata); ok {
+		return x.Metadata
+	}
+	return nil
+}
+
+func (x *FileUploadRequest) GetContent() []byte {
+	if x, ok := x.GetFileChunk().(*FileUploadRequest_Content); ok {
+		return x.Content
+	}
+	return nil
+}
+
+type isFileUploadRequest_FileChunk interface {
+	isFileUploadRequest_FileChunk()
+}
+
+type FileUploadRequest_Metadata struct {
+	Metadata *FileRequest `protobuf:"bytes,1,opt,name=metadata,proto3,oneof"`
+}
+
+type FileUploadRequest_Content struct {
+	Content []byte `protobuf:"bytes,2,opt,name=content,proto3,oneof"`
+}
+
+func (*FileUploadRequest_Metadata) isFileUploadRequest_FileChunk() {}
+
+func (*FileUploadRequest_Content) isFileUploadRequest_FileChunk() {}
+
 var File_file_server_proto protoreflect.FileDescriptor
 
 var file_file_server_proto_rawDesc = []byte{
@@ -319,14 +398,23 @@ var file_file_server_proto_rawDesc = []byte{
 	0x4e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x66, 0x69, 0x6c, 0x65,
 	0x4e, 0x61, 0x6d, 0x65, 0x22, 0x21, 0x0a, 0x05, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x12, 0x18, 0x0a,
 	0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07,
-	0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x32, 0x59, 0x0a, 0x0b, 0x46, 0x69, 0x6c, 0x65, 0x53,
-	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x25, 0x0a, 0x04, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x0c,
-	0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0d, 0x2e, 0x4c,
-	0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x23, 0x0a,
-	0x07, 0x47, 0x65, 0x74, 0x46, 0x69, 0x6c, 0x65, 0x12, 0x0c, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x06, 0x2e, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x22, 0x00,
-	0x30, 0x01, 0x42, 0x09, 0x5a, 0x07, 0x2e, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0x68, 0x0a, 0x11, 0x46, 0x69, 0x6c, 0x65, 0x55,
+	0x70, 0x6c, 0x6f, 0x61, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2a, 0x0a, 0x08,
+	0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c,
+	0x2e, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x08,
+	0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x12, 0x1a, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74,
+	0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x48, 0x00, 0x52, 0x07, 0x63, 0x6f, 0x6e,
+	0x74, 0x65, 0x6e, 0x74, 0x42, 0x0b, 0x0a, 0x09, 0x66, 0x69, 0x6c, 0x65, 0x43, 0x68, 0x75, 0x6e,
+	0x6b, 0x32, 0x86, 0x01, 0x0a, 0x0b, 0x46, 0x69, 0x6c, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x65, 0x12, 0x25, 0x0a, 0x04, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x0c, 0x2e, 0x4c, 0x69, 0x73, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0d, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x23, 0x0a, 0x07, 0x47, 0x65, 0x74, 0x46,
+	0x69, 0x6c, 0x65, 0x12, 0x0c, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x06, 0x2e, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x22, 0x00, 0x30, 0x01, 0x12, 0x2b, 0x0a,
+	0x0a, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x46, 0x69, 0x6c, 0x65, 0x12, 0x12, 0x2e, 0x46, 0x69,
+	0x6c, 0x65, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x05, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x22, 0x00, 0x28, 0x01, 0x42, 0x09, 0x5a, 0x07, 0x2e, 0x3b,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -341,25 +429,29 @@ func file_file_server_proto_rawDescGZIP() []byte {
 	return file_file_server_proto_rawDescData
 }
 
-var file_file_server_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_file_server_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_file_server_proto_goTypes = []interface{}{
-	(*ListRequest)(nil),  // 0: ListRequest
-	(*File)(nil),         // 1: File
-	(*ListResponse)(nil), // 2: ListResponse
-	(*FileRequest)(nil),  // 3: FileRequest
-	(*Chunk)(nil),        // 4: Chunk
+	(*ListRequest)(nil),       // 0: ListRequest
+	(*File)(nil),              // 1: File
+	(*ListResponse)(nil),      // 2: ListResponse
+	(*FileRequest)(nil),       // 3: FileRequest
+	(*Chunk)(nil),             // 4: Chunk
+	(*FileUploadRequest)(nil), // 5: FileUploadRequest
 }
 var file_file_server_proto_depIdxs = []int32{
 	1, // 0: ListResponse.files:type_name -> File
-	0, // 1: FileService.List:input_type -> ListRequest
-	3, // 2: FileService.GetFile:input_type -> FileRequest
-	2, // 3: FileService.List:output_type -> ListResponse
-	4, // 4: FileService.GetFile:output_type -> Chunk
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	3, // 1: FileUploadRequest.metadata:type_name -> FileRequest
+	0, // 2: FileService.List:input_type -> ListRequest
+	3, // 3: FileService.GetFile:input_type -> FileRequest
+	5, // 4: FileService.UploadFile:input_type -> FileUploadRequest
+	2, // 5: FileService.List:output_type -> ListResponse
+	4, // 6: FileService.GetFile:output_type -> Chunk
+	1, // 7: FileService.UploadFile:output_type -> File
+	5, // [5:8] is the sub-list for method output_type
+	2, // [2:5] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_file_server_proto_init() }
@@ -428,6 +520,22 @@ func file_file_server_proto_init() {
 				return nil
 			}
 		}
+		file_file_server_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FileUploadRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+	}
+	file_file_server_proto_msgTypes[5].OneofWrappers = []interface{}{
+		(*FileUploadRequest_Metadata)(nil),
+		(*FileUploadRequest_Content)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -435,7 +543,7 @@ func file_file_server_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_file_server_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -463,6 +571,7 @@ const _ = grpc.SupportPackageIsVersion6
 type FileServiceClient interface {
 	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
 	GetFile(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (FileService_GetFileClient, error)
+	UploadFile(ctx context.Context, opts ...grpc.CallOption) (FileService_UploadFileClient, error)
 }
 
 type fileServiceClient struct {
@@ -514,10 +623,45 @@ func (x *fileServiceGetFileClient) Recv() (*Chunk, error) {
 	return m, nil
 }
 
+func (c *fileServiceClient) UploadFile(ctx context.Context, opts ...grpc.CallOption) (FileService_UploadFileClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_FileService_serviceDesc.Streams[1], "/FileService/UploadFile", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &fileServiceUploadFileClient{stream}
+	return x, nil
+}
+
+type FileService_UploadFileClient interface {
+	Send(*FileUploadRequest) error
+	CloseAndRecv() (*File, error)
+	grpc.ClientStream
+}
+
+type fileServiceUploadFileClient struct {
+	grpc.ClientStream
+}
+
+func (x *fileServiceUploadFileClient) Send(m *FileUploadRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *fileServiceUploadFileClient) CloseAndRecv() (*File, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(File)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // FileServiceServer is the server API for FileService service.
 type FileServiceServer interface {
 	List(context.Context, *ListRequest) (*ListResponse, error)
 	GetFile(*FileRequest, FileService_GetFileServer) error
+	UploadFile(FileService_UploadFileServer) error
 }
 
 // UnimplementedFileServiceServer can be embedded to have forward compatible implementations.
@@ -529,6 +673,9 @@ func (*UnimplementedFileServiceServer) List(context.Context, *ListRequest) (*Lis
 }
 func (*UnimplementedFileServiceServer) GetFile(*FileRequest, FileService_GetFileServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetFile not implemented")
+}
+func (*UnimplementedFileServiceServer) UploadFile(FileService_UploadFileServer) error {
+	return status.Errorf(codes.Unimplemented, "method UploadFile not implemented")
 }
 
 func RegisterFileServiceServer(s *grpc.Server, srv FileServiceServer) {
@@ -574,6 +721,32 @@ func (x *fileServiceGetFileServer) Send(m *Chunk) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _FileService_UploadFile_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(FileServiceServer).UploadFile(&fileServiceUploadFileServer{stream})
+}
+
+type FileService_UploadFileServer interface {
+	SendAndClose(*File) error
+	Recv() (*FileUploadRequest, error)
+	grpc.ServerStream
+}
+
+type fileServiceUploadFileServer struct {
+	grpc.ServerStream
+}
+
+func (x *fileServiceUploadFileServer) SendAndClose(m *File) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *fileServiceUploadFileServer) Recv() (*FileUploadRequest, error) {
+	m := new(FileUploadRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 var _FileService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "FileService",
 	HandlerType: (*FileServiceServer)(nil),
@@ -588,6 +761,11 @@ var _FileService_serviceDesc = grpc.ServiceDesc{
 			StreamName:    "GetFile",
 			Handler:       _FileService_GetFile_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "UploadFile",
+			Handler:       _FileService_UploadFile_Handler,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "file_server.proto",

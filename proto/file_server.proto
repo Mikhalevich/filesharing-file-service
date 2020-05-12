@@ -5,6 +5,7 @@ option go_package = ".;proto";
 service FileService {
   rpc List(ListRequest) returns (ListResponse) {}
   rpc GetFile(FileRequest) returns (stream Chunk) {}
+  rpc UploadFile(stream FileUploadRequest) returns (File) {} 
 }
 
 message ListRequest {
@@ -29,4 +30,11 @@ message FileRequest {
 
 message Chunk {
     bytes content = 1;
+}
+
+message FileUploadRequest {
+    oneof fileChunk {
+      FileRequest metadata = 1;
+      bytes content = 2;
+    }
 }

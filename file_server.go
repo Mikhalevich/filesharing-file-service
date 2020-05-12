@@ -78,3 +78,77 @@ func (fs *fileServer) GetFile(req *proto.FileRequest, stream proto.FileService_G
 	}
 	return nil
 }
+
+func contentFromUploadRequest(stream proto.FileService_UploadFileServer) ([]byte, error) {
+	chunk, err := stream.Recv()
+	if err != nil {
+		return nil, err
+	}
+
+	content := chunk.GetContent()
+	if content == nil {
+		return nil, errors.New("file content is missing from request")
+	}
+
+	return content, nil
+}
+
+func metadataFromUploadRequest(stream proto.FileService_UploadFileServer) (*proto.FileRequest, error) {
+	chunk, err := stream.Recv()
+	if err != nil {
+		return nil, err
+
+	}
+	metadata := chunk.GetMetadata()
+	if metadata == nil {
+		return nil, errors.New("file info is missing from request")
+	}
+
+	return metadata, nil
+}
+
+func (fs *fileServer) UploadFile(stream proto.FileService_UploadFileServer) error {
+	metadata, err := metadataFromUploadRequest(stream)
+
+	r, w := io.Pipe()
+
+	go func() {
+		var closeError error
+		for {
+			content, err := contentFromUploadRequest(stream)
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				closeError = err
+				break
+			}
+			w.Write(content)
+		}
+
+		if closeError != nil {
+			w.CloseWithError(err)
+			return
+		}
+
+		w.Close()
+	}()
+
+	dir := fs.makePath(metadata.GetStorage(), metadata.GetIsPermanent(), "")
+	fileName, err := fs.tempStorage.store(dir, metadata.GetFileName(), r)
+
+	if err != nil {
+		return err
+	}
+
+	err = fs.storage.move(fs.tempStorage.join(fileName), dir, fileName)
+	if err != nil {
+		return err
+	}
+
+	stream.SendAndClose(&proto.File{
+		Name:    fileName,
+		Size:    0,
+		ModTime: 0,
+	})
+	return nil
+}
