@@ -7,16 +7,17 @@ import (
 	"os"
 	"path"
 
+	"github.com/Mikhalevich/file_service/filesystem"
 	"github.com/Mikhalevich/file_service/proto"
 )
 
 type fileServer struct {
-	storage            *fileStorage
+	storage            *filesystem.Storage
 	permanentDirectory string
-	tempStorage        *fileStorage
+	tempStorage        *filesystem.Storage
 }
 
-func newFileServer(s *fileStorage, pd string, temp *fileStorage) *fileServer {
+func newFileServer(s *filesystem.Storage, pd string, temp *filesystem.Storage) *fileServer {
 	return &fileServer{
 		storage:            s,
 		permanentDirectory: pd,
@@ -32,7 +33,7 @@ func (fs *fileServer) makePath(storage string, isPermanent bool, file string) st
 }
 
 func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest) (*proto.ListResponse, error) {
-	fi := fs.storage.files(fs.makePath(req.GetPath(), false, ""))
+	fi := fs.storage.Files(fs.makePath(req.GetPath(), false, ""))
 	files := make([]*proto.File, 0, len(fi))
 	for _, v := range fi {
 		files = append(files, &proto.File{
@@ -49,11 +50,11 @@ func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest) (*proto.
 
 func (fs *fileServer) GetFile(req *proto.FileRequest, stream proto.FileService_GetFileServer) error {
 	p := fs.makePath(req.GetStorage(), req.GetIsPermanent(), req.GetFileName())
-	if !fs.storage.isExists(p) {
+	if !fs.storage.IsExists(p) {
 		return errors.New("file doesn't exist")
 	}
 
-	file, err := os.Open(fs.storage.join(p))
+	file, err := os.Open(fs.storage.Join(p))
 	if err != nil {
 		return err
 	}
@@ -134,13 +135,13 @@ func (fs *fileServer) UploadFile(stream proto.FileService_UploadFileServer) erro
 	}()
 
 	dir := fs.makePath(metadata.GetStorage(), metadata.GetIsPermanent(), "")
-	fileName, err := fs.tempStorage.store(dir, metadata.GetFileName(), r)
+	fileName, err := fs.tempStorage.Store("", metadata.GetFileName(), r)
 
 	if err != nil {
 		return err
 	}
 
-	err = fs.storage.move(fs.tempStorage.join(fileName), dir, fileName)
+	err = fs.storage.Move(fs.tempStorage.Join(fileName), dir, fileName)
 	if err != nil {
 		return err
 	}

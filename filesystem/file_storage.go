@@ -1,4 +1,4 @@
-package main
+package filesystem
 
 import (
 	"errors"
@@ -92,42 +92,42 @@ func (fil fileInfoList) Exist(name string) bool {
 	return false
 }
 
-type fileStorage struct {
+type Storage struct {
 	rootPath string
 }
 
-func newFileStorage(root string) *fileStorage {
-	return &fileStorage{
+func NewStorage(root string) *Storage {
+	return &Storage{
 		rootPath: root,
 	}
 }
 
-func (fs *fileStorage) root() string {
-	return fs.rootPath
+func (s *Storage) root() string {
+	return s.rootPath
 }
 
-func (fs *fileStorage) join(p string) string {
-	return path.Join(fs.rootPath, p)
+func (s *Storage) Join(p string) string {
+	return path.Join(s.rootPath, p)
 }
 
-func (fs *fileStorage) isExists(p string) bool {
-	_, err := os.Stat(fs.join(p))
+func (s *Storage) IsExists(p string) bool {
+	_, err := os.Stat(s.Join(p))
 	if err != nil {
 		return !os.IsNotExist(err)
 	}
 	return true
 }
 
-func (fs *fileStorage) mkdir(dir string) error {
-	return os.Mkdir(fs.join(dir), os.ModePerm)
+func (s *Storage) mkdir(dir string) error {
+	return os.Mkdir(s.Join(dir), os.ModePerm)
 }
 
-func (fs *fileStorage) files(p string) fileInfoList {
-	return newDirectory(fs.join(p)).list()
+func (s *Storage) Files(p string) fileInfoList {
+	return newDirectory(s.Join(p)).list()
 }
 
-func (fs *fileStorage) store(dir string, fileName string, data io.Reader) (string, error) {
-	dirPath := fs.join(dir)
+func (s *Storage) Store(dir string, fileName string, data io.Reader) (string, error) {
+	dirPath := s.Join(dir)
 	uniqueName := newDirectory(dirPath).uniqueName(fileName)
 	f, err := os.Create(path.Join(dirPath, uniqueName))
 	if err != nil {
@@ -143,14 +143,14 @@ func (fs *fileStorage) store(dir string, fileName string, data io.Reader) (strin
 	return uniqueName, nil
 }
 
-func (fs *fileStorage) move(filePath string, dir string, fileName string) error {
-	dirPath := fs.join(dir)
+func (s *Storage) Move(filePath string, dir string, fileName string) error {
+	dirPath := s.Join(dir)
 	uniqueName := newDirectory(dirPath).uniqueName(fileName)
 	return os.Rename(filePath, path.Join(dirPath, uniqueName))
 }
 
-func (fs *fileStorage) remove(dir string, fileName string) error {
-	dirPath := fs.join(dir)
+func (s *Storage) Remove(dir string, fileName string) error {
+	dirPath := s.Join(dir)
 	files := newDirectory(dirPath).list()
 	if !files.Exist(fileName) {
 		return errNotExists

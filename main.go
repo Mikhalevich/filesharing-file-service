@@ -6,6 +6,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/Mikhalevich/file_service/filesystem"
 	"github.com/Mikhalevich/file_service/proto"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -101,9 +102,9 @@ func main() {
 	s := grpc.NewServer()
 
 	proto.RegisterFileServiceServer(s, &fileServer{
-		storage:            newFileStorage(p.root),
+		storage:            filesystem.NewStorage(p.root),
 		permanentDirectory: p.permanent,
-		tempStorage:        newFileStorage(p.temp),
+		tempStorage:        filesystem.NewStorage(p.temp),
 	})
 
 	err = s.Serve(lis)
