@@ -32,7 +32,7 @@ func (fs *fileServer) makePath(storage string, isPermanent bool, file string) st
 }
 
 func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest) (*proto.ListResponse, error) {
-	fi, err := fs.storage.Files(fs.makePath(req.GetPath(), false, ""))
+	fi, err := fs.storage.Files(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""))
 	if err != nil {
 		return nil, err
 	}
@@ -148,4 +148,9 @@ func (fs *fileServer) UploadFile(stream proto.FileService_UploadFileServer) erro
 		ModTime: 0,
 	})
 	return nil
+}
+
+func (fs *fileServer) RemoveFile(ctx context.Context, req *proto.FileRequest) (*proto.EmptyResponse, error) {
+	err := fs.storage.Remove(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
+	return &proto.EmptyResponse{}, err
 }

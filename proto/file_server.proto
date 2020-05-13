@@ -6,10 +6,16 @@ service FileService {
   rpc List(ListRequest) returns (ListResponse) {}
   rpc GetFile(FileRequest) returns (stream Chunk) {}
   rpc UploadFile(stream FileUploadRequest) returns (File) {} 
+  rpc RemoveFile(FileRequest) returns (EmptyResponse) {}
+}
+
+message EmptyResponse {
+
 }
 
 message ListRequest {
-  string path = 1;
+  string storage = 1;
+  bool isPermanent = 2;
 }
 
 message File {
