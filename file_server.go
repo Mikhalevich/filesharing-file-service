@@ -8,19 +8,22 @@ import (
 
 	"github.com/Mikhalevich/file_service/filesystem"
 	"github.com/Mikhalevich/file_service/proto"
+	"github.com/sirupsen/logrus"
 )
 
 type fileServer struct {
 	storage            *filesystem.Storage
 	permanentDirectory string
 	tempStorage        *filesystem.Storage
+	logger             *logrus.Logger
 }
 
-func newFileServer(s *filesystem.Storage, pd string, temp *filesystem.Storage) *fileServer {
+func newFileServer(s *filesystem.Storage, pd string, temp *filesystem.Storage, l *logrus.Logger) *fileServer {
 	return &fileServer{
 		storage:            s,
 		permanentDirectory: pd,
 		tempStorage:        temp,
+		logger:             l,
 	}
 }
 
@@ -32,7 +35,11 @@ func (fs *fileServer) makePath(storage string, isPermanent bool, file string) st
 }
 
 func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest) (*proto.ListResponse, error) {
-	fi := fs.storage.Files(fs.makePath(req.GetPath(), false, ""))
+	fi, err := fs.storage.Files(fs.makePath(req.GetPath(), false, ""))
+	if err != nil {
+		return nil, err
+	}
+
 	files := make([]*proto.File, 0, len(fi))
 	for _, v := range fi {
 		files = append(files, &proto.File{

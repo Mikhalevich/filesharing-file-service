@@ -3,13 +3,73 @@ package filesystem
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
 )
+
+type byteSize float64
+
+const (
+	_           = iota // ignore first value by assigning to blank identifier
+	kb byteSize = 1 << (10 * iota)
+	mb
+	gb
+	tb
+	pb
+	eb
+	zb
+	yb
+)
+
+func (b byteSize) String() string {
+	switch {
+	case b >= yb:
+		return fmt.Sprintf("%.2fYB", b/yb)
+	case b >= zb:
+		return fmt.Sprintf("%.2fZB", b/zb)
+	case b >= eb:
+		return fmt.Sprintf("%.2fEB", b/eb)
+	case b >= pb:
+		return fmt.Sprintf("%.2fPB", b/pb)
+	case b >= tb:
+		return fmt.Sprintf("%.2fTB", b/tb)
+	case b >= gb:
+		return fmt.Sprintf("%.2fGB", b/gb)
+	case b >= mb:
+		return fmt.Sprintf("%.2fMB", b/mb)
+	case b >= kb:
+		return fmt.Sprintf("%.2fKB", b/kb)
+	}
+	return fmt.Sprintf("%.2fB", b)
+}
+
+// FileInfo represent file from storage
+type FileInfo struct {
+	os.FileInfo
+}
+
+// Size it's formatted size of the file
+// func (fi *FileInfo) Size() string {
+// 	return byteSize(fi.FileInfo.Size()).String()
+// }
+
+// FileInfoList slice of FileInfo uses for sort
+type FileInfoList []FileInfo
+
+func (fil FileInfoList) Len() int {
+	return len(fil)
+}
+
+func (fil FileInfoList) Swap(i, j int) {
+	fil[i], fil[j] = fil[j], fil[i]
+}
+
+func (fil FileInfoList) Less(i, j int) bool {
+	return fil[i].ModTime().After(fil[j].ModTime())
+}
 
 type directory struct {
 	Path string
@@ -21,22 +81,21 @@ func newDirectory(path string) *directory {
 	}
 }
 
-func (d *directory) list() fileInfoList {
+func (d *directory) list() (FileInfoList, error) {
 	osFiList, err := ioutil.ReadDir(d.Path)
 	if err != nil {
-		log.Println(err)
-		return fileInfoList{}
+		return nil, err
 	}
 
-	fiList := make(fileInfoList, 0, len(osFiList))
+	fiList := make(FileInfoList, 0, len(osFiList))
 
 	for _, osFi := range osFiList {
-		fiList = append(fiList, fileInfo{osFi})
+		fiList = append(fiList, FileInfo{osFi})
 	}
 
 	sort.Sort(fiList)
 
-	return fiList
+	return fiList, nil
 }
 
 func makeFileName(baseName string, count int) string {
@@ -80,23 +139,3 @@ func (d *directory) moveFile(file *File, fileName string) error {
 
 	return nil
 }
-
-// func (d *directory) uniqueName(fileName string) string {
-// 	ld := d.list()
-// 	if !ld.Exist(fileName) {
-// 		return fileName
-// 	}
-
-// 	ext := filepath.Ext(fileName)
-
-// 	nameTemplate := fmt.Sprintf("%s%s%s", strings.TrimSuffix(fileName, ext), "_%d", ext)
-
-// 	for count := 1; ; count++ {
-// 		fileName = fmt.Sprintf(nameTemplate, count)
-// 		if !ld.Exist(fileName) {
-// 			break
-// 		}
-// 	}
-
-// 	return fileName
-// }

@@ -105,6 +105,7 @@ func main() {
 		storage:            filesystem.NewStorage(p.root),
 		permanentDirectory: p.permanent,
 		tempStorage:        filesystem.NewStorage(p.temp),
+		logger:             logger,
 	})
 
 	err = s.Serve(lis)
