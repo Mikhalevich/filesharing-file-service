@@ -61,7 +61,8 @@ func (f *File) Write(p []byte) (n int, err error) {
 	return f.file.Write(p)
 }
 
-func (f *File) remove() error {
+// Remove deletes file from filesystem
+func (f *File) Remove() error {
 	f.Close()
 	return os.Remove(f.absPath)
 }

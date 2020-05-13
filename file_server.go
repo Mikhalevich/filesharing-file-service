@@ -8,22 +8,19 @@ import (
 
 	"github.com/Mikhalevich/file_service/filesystem"
 	"github.com/Mikhalevich/file_service/proto"
-	"github.com/sirupsen/logrus"
 )
 
 type fileServer struct {
 	storage            *filesystem.Storage
 	permanentDirectory string
 	tempStorage        *filesystem.Storage
-	logger             *logrus.Logger
 }
 
-func newFileServer(s *filesystem.Storage, pd string, temp *filesystem.Storage, l *logrus.Logger) *fileServer {
+func newFileServer(s *filesystem.Storage, pd string, temp *filesystem.Storage) *fileServer {
 	return &fileServer{
 		storage:            s,
 		permanentDirectory: pd,
 		tempStorage:        temp,
-		logger:             l,
 	}
 }
 
@@ -70,11 +67,9 @@ func (fs *fileServer) GetFile(req *proto.FileRequest, stream proto.FileService_G
 			})
 		}
 
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-
+		if err == io.EOF {
+			break
+		} else if err != nil {
 			return err
 		}
 	}
@@ -136,7 +131,6 @@ func (fs *fileServer) UploadFile(stream proto.FileService_UploadFileServer) erro
 	}()
 
 	file, err := fs.tempStorage.Store("", metadata.GetFileName(), r)
-
 	if err != nil {
 		return err
 	}
@@ -144,6 +138,7 @@ func (fs *fileServer) UploadFile(stream proto.FileService_UploadFileServer) erro
 	dir := fs.makePath(metadata.GetStorage(), metadata.GetIsPermanent(), "")
 	err = fs.storage.Move(file, dir, metadata.GetFileName())
 	if err != nil {
+		file.Remove()
 		return err
 	}
 

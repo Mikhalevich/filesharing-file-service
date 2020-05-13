@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net"
 	"os"
 	"path"
@@ -70,6 +71,26 @@ func runCleaner(cleanTime, rootPath, permanentDirectory string, l *logrus.Logger
 	return nil
 }
 
+func makeUnaryInterceptor(logger *logrus.Logger) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		h, err := handler(ctx, req)
+		if err != nil {
+			logger.Errorln(err)
+		}
+		return h, err
+	}
+}
+
+func makeStreamInterceptor(logger *logrus.Logger) grpc.StreamServerInterceptor {
+	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		err := handler(srv, ss)
+		if err != nil {
+			logger.Errorln(err)
+		}
+		return err
+	}
+}
+
 func main() {
 	logger := logrus.New()
 	logger.SetOutput(os.Stdout)
@@ -99,13 +120,13 @@ func main() {
 		return
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc.UnaryInterceptor(makeUnaryInterceptor(logger)),
+		grpc.StreamInterceptor(makeStreamInterceptor(logger)))
 
 	proto.RegisterFileServiceServer(s, &fileServer{
 		storage:            filesystem.NewStorage(p.root),
 		permanentDirectory: p.permanent,
 		tempStorage:        filesystem.NewStorage(p.temp),
-		logger:             logger,
 	})
 
 	err = s.Serve(lis)

@@ -51,6 +51,7 @@ func (s *Storage) Store(dir string, fileName string, data io.Reader) (*File, err
 
 	_, err = io.Copy(f, data)
 	if err != nil {
+		f.Remove()
 		return nil, fmt.Errorf("[store file] error while copy file data dir = %s, name = %s, err = %w", dir, fileName, err)
 	}
 
@@ -72,7 +73,7 @@ func (s *Storage) Remove(dir string, fileName string) error {
 	if err != nil {
 		return fmt.Errorf("[remove file] unable to open file dir = %s, name = %s, err = %w", dir, fileName, err)
 	}
-	err = f.remove()
+	err = f.Remove()
 	if err != nil {
 		return fmt.Errorf("[remove file] unable to remove file dir = %s, name = %s, err = %w", dir, fileName, err)
 	}
