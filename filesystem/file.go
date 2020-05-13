@@ -1,6 +1,7 @@
 package filesystem
 
 import (
+	"errors"
 	"os"
 )
 
@@ -36,17 +37,19 @@ func openFile(p string) (*File, error) {
 
 // Close open file
 func (f *File) Close() error {
-	return f.file.Close()
+	err := f.file.Close()
+	if errors.Is(err, os.ErrClosed) {
+		return nil
+	}
+	return err
 }
 
 // Name return base file name
 func (f *File) Name() string {
-	f.file.Close()
 	fi, err := os.Stat(f.absPath)
 	if err != nil {
 		return ""
 	}
-
 	return fi.Name()
 }
 
