@@ -1,9 +1,16 @@
 package filesystem
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"os"
 	"path"
+)
+
+var (
+	// ErrAlreadyExist indicate thet storage already exists in Mkdir function
+	ErrAlreadyExist = errors.New("storage alredy exists")
 )
 
 // Storage represent file manipulation fasade
@@ -78,4 +85,18 @@ func (s *Storage) Remove(dir string, fileName string) error {
 		return fmt.Errorf("[remove file] unable to remove file dir = %s, name = %s, err = %w", dir, fileName, err)
 	}
 	return nil
+}
+
+// Mkdir just create directory
+func (s *Storage) Mkdir(dir string) error {
+	err := os.Mkdir(s.join(dir), os.ModePerm)
+	if os.IsExist(err) {
+		return ErrAlreadyExist
+	}
+	return err
+}
+
+// RemoveDir dir just remove directory
+func (s *Storage) RemoveDir(dir string) error {
+	return os.RemoveAll(dir)
 }

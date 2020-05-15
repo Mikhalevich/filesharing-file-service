@@ -154,3 +154,28 @@ func (fs *fileServer) RemoveFile(ctx context.Context, req *proto.FileRequest) (*
 	err := fs.storage.Remove(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
 	return &proto.EmptyResponse{}, err
 }
+
+func (fs *fileServer) CreateStorage(ctx context.Context, req *proto.CreateStorageRequest) (*proto.CreateStorageResponse, error) {
+	status := proto.CreateStorageStatus_Ok
+	sPath := fs.makePath(req.GetName(), false, "")
+	err := fs.storage.Mkdir(sPath)
+	if errors.Is(err, filesystem.ErrAlreadyExist) {
+		status = proto.CreateStorageStatus_AlreadyExist
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if req.GetWithPermanent() {
+		err = fs.storage.Mkdir(fs.makePath(req.GetName(), true, ""))
+		if err != nil {
+			fs.storage.RemoveDir(sPath)
+			return nil, err
+		}
+	}
+
+	return &proto.CreateStorageResponse{
+		Status: status,
+	}, nil
+}

@@ -29,6 +29,52 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+type CreateStorageStatus int32
+
+const (
+	CreateStorageStatus_Ok           CreateStorageStatus = 0
+	CreateStorageStatus_AlreadyExist CreateStorageStatus = 1
+)
+
+// Enum value maps for CreateStorageStatus.
+var (
+	CreateStorageStatus_name = map[int32]string{
+		0: "Ok",
+		1: "AlreadyExist",
+	}
+	CreateStorageStatus_value = map[string]int32{
+		"Ok":           0,
+		"AlreadyExist": 1,
+	}
+)
+
+func (x CreateStorageStatus) Enum() *CreateStorageStatus {
+	p := new(CreateStorageStatus)
+	*p = x
+	return p
+}
+
+func (x CreateStorageStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CreateStorageStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_file_server_proto_enumTypes[0].Descriptor()
+}
+
+func (CreateStorageStatus) Type() protoreflect.EnumType {
+	return &file_file_server_proto_enumTypes[0]
+}
+
+func (x CreateStorageStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CreateStorageStatus.Descriptor instead.
+func (CreateStorageStatus) EnumDescriptor() ([]byte, []int) {
+	return file_file_server_proto_rawDescGZIP(), []int{0}
+}
+
 type EmptyResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -422,6 +468,108 @@ func (*FileUploadRequest_Metadata) isFileUploadRequest_FileChunk() {}
 
 func (*FileUploadRequest_Content) isFileUploadRequest_FileChunk() {}
 
+type CreateStorageRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	WithPermanent bool   `protobuf:"varint,2,opt,name=withPermanent,proto3" json:"withPermanent,omitempty"`
+}
+
+func (x *CreateStorageRequest) Reset() {
+	*x = CreateStorageRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_file_server_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CreateStorageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateStorageRequest) ProtoMessage() {}
+
+func (x *CreateStorageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_file_server_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateStorageRequest.ProtoReflect.Descriptor instead.
+func (*CreateStorageRequest) Descriptor() ([]byte, []int) {
+	return file_file_server_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CreateStorageRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateStorageRequest) GetWithPermanent() bool {
+	if x != nil {
+		return x.WithPermanent
+	}
+	return false
+}
+
+type CreateStorageResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status CreateStorageStatus `protobuf:"varint,1,opt,name=status,proto3,enum=CreateStorageStatus" json:"status,omitempty"`
+}
+
+func (x *CreateStorageResponse) Reset() {
+	*x = CreateStorageResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_file_server_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CreateStorageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateStorageResponse) ProtoMessage() {}
+
+func (x *CreateStorageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_file_server_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateStorageResponse.ProtoReflect.Descriptor instead.
+func (*CreateStorageResponse) Descriptor() ([]byte, []int) {
+	return file_file_server_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *CreateStorageResponse) GetStatus() CreateStorageStatus {
+	if x != nil {
+		return x.Status
+	}
+	return CreateStorageStatus_Ok
+}
+
 var File_file_server_proto protoreflect.FileDescriptor
 
 var file_file_server_proto_rawDesc = []byte{
@@ -454,20 +602,36 @@ var file_file_server_proto_rawDesc = []byte{
 	0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74,
 	0x61, 0x12, 0x1a, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01,
 	0x28, 0x0c, 0x48, 0x00, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x42, 0x0b, 0x0a,
-	0x09, 0x66, 0x69, 0x6c, 0x65, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x32, 0xb4, 0x01, 0x0a, 0x0b, 0x46,
-	0x69, 0x6c, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x25, 0x0a, 0x04, 0x4c, 0x69,
-	0x73, 0x74, 0x12, 0x0c, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x0d, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x00, 0x12, 0x23, 0x0a, 0x07, 0x47, 0x65, 0x74, 0x46, 0x69, 0x6c, 0x65, 0x12, 0x0c, 0x2e, 0x46,
-	0x69, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x06, 0x2e, 0x43, 0x68, 0x75,
-	0x6e, 0x6b, 0x22, 0x00, 0x30, 0x01, 0x12, 0x2b, 0x0a, 0x0a, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64,
-	0x46, 0x69, 0x6c, 0x65, 0x12, 0x12, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x55, 0x70, 0x6c, 0x6f, 0x61,
-	0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x05, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x22,
-	0x00, 0x28, 0x01, 0x12, 0x2c, 0x0a, 0x0a, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x69, 0x6c,
-	0x65, 0x12, 0x0c, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x0e, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x00, 0x42, 0x09, 0x5a, 0x07, 0x2e, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x09, 0x66, 0x69, 0x6c, 0x65, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x22, 0x50, 0x0a, 0x14, 0x43, 0x72,
+	0x65, 0x61, 0x74, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x24, 0x0a, 0x0d, 0x77, 0x69, 0x74, 0x68, 0x50, 0x65,
+	0x72, 0x6d, 0x61, 0x6e, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0d, 0x77,
+	0x69, 0x74, 0x68, 0x50, 0x65, 0x72, 0x6d, 0x61, 0x6e, 0x65, 0x6e, 0x74, 0x22, 0x45, 0x0a, 0x15,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2c, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x14, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x74,
+	0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61,
+	0x74, 0x75, 0x73, 0x2a, 0x2f, 0x0a, 0x13, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x74, 0x6f,
+	0x72, 0x61, 0x67, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x06, 0x0a, 0x02, 0x4f, 0x6b,
+	0x10, 0x00, 0x12, 0x10, 0x0a, 0x0c, 0x41, 0x6c, 0x72, 0x65, 0x61, 0x64, 0x79, 0x45, 0x78, 0x69,
+	0x73, 0x74, 0x10, 0x01, 0x32, 0xf6, 0x01, 0x0a, 0x0b, 0x46, 0x69, 0x6c, 0x65, 0x53, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x12, 0x25, 0x0a, 0x04, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x0c, 0x2e, 0x4c,
+	0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0d, 0x2e, 0x4c, 0x69, 0x73,
+	0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x23, 0x0a, 0x07, 0x47,
+	0x65, 0x74, 0x46, 0x69, 0x6c, 0x65, 0x12, 0x0c, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x06, 0x2e, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x22, 0x00, 0x30, 0x01,
+	0x12, 0x2b, 0x0a, 0x0a, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x46, 0x69, 0x6c, 0x65, 0x12, 0x12,
+	0x2e, 0x46, 0x69, 0x6c, 0x65, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x05, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x22, 0x00, 0x28, 0x01, 0x12, 0x2c, 0x0a,
+	0x0a, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x69, 0x6c, 0x65, 0x12, 0x0c, 0x2e, 0x46, 0x69,
+	0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0e, 0x2e, 0x45, 0x6d, 0x70, 0x74,
+	0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x40, 0x0a, 0x0d, 0x43,
+	0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x15, 0x2e, 0x43,
+	0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x74, 0x6f, 0x72,
+	0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x09, 0x5a,
+	0x07, 0x2e, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -482,32 +646,39 @@ func file_file_server_proto_rawDescGZIP() []byte {
 	return file_file_server_proto_rawDescData
 }
 
-var file_file_server_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_file_server_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_file_server_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_file_server_proto_goTypes = []interface{}{
-	(*EmptyResponse)(nil),     // 0: EmptyResponse
-	(*ListRequest)(nil),       // 1: ListRequest
-	(*File)(nil),              // 2: File
-	(*ListResponse)(nil),      // 3: ListResponse
-	(*FileRequest)(nil),       // 4: FileRequest
-	(*Chunk)(nil),             // 5: Chunk
-	(*FileUploadRequest)(nil), // 6: FileUploadRequest
+	(CreateStorageStatus)(0),      // 0: CreateStorageStatus
+	(*EmptyResponse)(nil),         // 1: EmptyResponse
+	(*ListRequest)(nil),           // 2: ListRequest
+	(*File)(nil),                  // 3: File
+	(*ListResponse)(nil),          // 4: ListResponse
+	(*FileRequest)(nil),           // 5: FileRequest
+	(*Chunk)(nil),                 // 6: Chunk
+	(*FileUploadRequest)(nil),     // 7: FileUploadRequest
+	(*CreateStorageRequest)(nil),  // 8: CreateStorageRequest
+	(*CreateStorageResponse)(nil), // 9: CreateStorageResponse
 }
 var file_file_server_proto_depIdxs = []int32{
-	2, // 0: ListResponse.files:type_name -> File
-	4, // 1: FileUploadRequest.metadata:type_name -> FileRequest
-	1, // 2: FileService.List:input_type -> ListRequest
-	4, // 3: FileService.GetFile:input_type -> FileRequest
-	6, // 4: FileService.UploadFile:input_type -> FileUploadRequest
-	4, // 5: FileService.RemoveFile:input_type -> FileRequest
-	3, // 6: FileService.List:output_type -> ListResponse
-	5, // 7: FileService.GetFile:output_type -> Chunk
-	2, // 8: FileService.UploadFile:output_type -> File
-	0, // 9: FileService.RemoveFile:output_type -> EmptyResponse
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 0: ListResponse.files:type_name -> File
+	5, // 1: FileUploadRequest.metadata:type_name -> FileRequest
+	0, // 2: CreateStorageResponse.status:type_name -> CreateStorageStatus
+	2, // 3: FileService.List:input_type -> ListRequest
+	5, // 4: FileService.GetFile:input_type -> FileRequest
+	7, // 5: FileService.UploadFile:input_type -> FileUploadRequest
+	5, // 6: FileService.RemoveFile:input_type -> FileRequest
+	8, // 7: FileService.CreateStorage:input_type -> CreateStorageRequest
+	4, // 8: FileService.List:output_type -> ListResponse
+	6, // 9: FileService.GetFile:output_type -> Chunk
+	3, // 10: FileService.UploadFile:output_type -> File
+	1, // 11: FileService.RemoveFile:output_type -> EmptyResponse
+	9, // 12: FileService.CreateStorage:output_type -> CreateStorageResponse
+	8, // [8:13] is the sub-list for method output_type
+	3, // [3:8] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_file_server_proto_init() }
@@ -600,6 +771,30 @@ func file_file_server_proto_init() {
 				return nil
 			}
 		}
+		file_file_server_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateStorageRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_file_server_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateStorageResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_file_server_proto_msgTypes[6].OneofWrappers = []interface{}{
 		(*FileUploadRequest_Metadata)(nil),
@@ -610,13 +805,14 @@ func file_file_server_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_file_server_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   7,
+			NumEnums:      1,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_file_server_proto_goTypes,
 		DependencyIndexes: file_file_server_proto_depIdxs,
+		EnumInfos:         file_file_server_proto_enumTypes,
 		MessageInfos:      file_file_server_proto_msgTypes,
 	}.Build()
 	File_file_server_proto = out.File
@@ -641,6 +837,7 @@ type FileServiceClient interface {
 	GetFile(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (FileService_GetFileClient, error)
 	UploadFile(ctx context.Context, opts ...grpc.CallOption) (FileService_UploadFileClient, error)
 	RemoveFile(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	CreateStorage(ctx context.Context, in *CreateStorageRequest, opts ...grpc.CallOption) (*CreateStorageResponse, error)
 }
 
 type fileServiceClient struct {
@@ -735,12 +932,22 @@ func (c *fileServiceClient) RemoveFile(ctx context.Context, in *FileRequest, opt
 	return out, nil
 }
 
+func (c *fileServiceClient) CreateStorage(ctx context.Context, in *CreateStorageRequest, opts ...grpc.CallOption) (*CreateStorageResponse, error) {
+	out := new(CreateStorageResponse)
+	err := c.cc.Invoke(ctx, "/FileService/CreateStorage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FileServiceServer is the server API for FileService service.
 type FileServiceServer interface {
 	List(context.Context, *ListRequest) (*ListResponse, error)
 	GetFile(*FileRequest, FileService_GetFileServer) error
 	UploadFile(FileService_UploadFileServer) error
 	RemoveFile(context.Context, *FileRequest) (*EmptyResponse, error)
+	CreateStorage(context.Context, *CreateStorageRequest) (*CreateStorageResponse, error)
 }
 
 // UnimplementedFileServiceServer can be embedded to have forward compatible implementations.
@@ -758,6 +965,9 @@ func (*UnimplementedFileServiceServer) UploadFile(FileService_UploadFileServer) 
 }
 func (*UnimplementedFileServiceServer) RemoveFile(context.Context, *FileRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFile not implemented")
+}
+func (*UnimplementedFileServiceServer) CreateStorage(context.Context, *CreateStorageRequest) (*CreateStorageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateStorage not implemented")
 }
 
 func RegisterFileServiceServer(s *grpc.Server, srv FileServiceServer) {
@@ -847,6 +1057,24 @@ func _FileService_RemoveFile_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FileService_CreateStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateStorageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileServiceServer).CreateStorage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/FileService/CreateStorage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileServiceServer).CreateStorage(ctx, req.(*CreateStorageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _FileService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "FileService",
 	HandlerType: (*FileServiceServer)(nil),
@@ -858,6 +1086,10 @@ var _FileService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveFile",
 			Handler:    _FileService_RemoveFile_Handler,
+		},
+		{
+			MethodName: "CreateStorage",
+			Handler:    _FileService_CreateStorage_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

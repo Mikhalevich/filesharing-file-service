@@ -7,6 +7,7 @@ service FileService {
   rpc GetFile(FileRequest) returns (stream Chunk) {}
   rpc UploadFile(stream FileUploadRequest) returns (File) {} 
   rpc RemoveFile(FileRequest) returns (EmptyResponse) {}
+  rpc CreateStorage(CreateStorageRequest) returns (CreateStorageResponse) {}
 }
 
 message EmptyResponse {
@@ -29,18 +30,32 @@ message ListResponse {
 }
 
 message FileRequest {
-    string storage = 1;
-    bool isPermanent = 2;
-    string fileName = 3;
+  string storage = 1;
+  bool isPermanent = 2;
+  string fileName = 3;
 }
 
 message Chunk {
-    bytes content = 1;
+  bytes content = 1;
 }
 
 message FileUploadRequest {
-    oneof fileChunk {
-      FileRequest metadata = 1;
-      bytes content = 2;
-    }
+  oneof fileChunk {
+    FileRequest metadata = 1;
+    bytes content = 2;
+  }
+}
+
+message CreateStorageRequest {
+  string name = 1;
+  bool withPermanent = 2;
+}
+
+enum CreateStorageStatus {
+  Ok = 0;
+  AlreadyExist = 1;
+}
+
+message CreateStorageResponse {
+  CreateStorageStatus status = 1;
 }
