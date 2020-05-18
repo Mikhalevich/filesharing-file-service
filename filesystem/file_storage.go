@@ -100,3 +100,13 @@ func (s *Storage) Mkdir(dir string) error {
 func (s *Storage) RemoveDir(dir string) error {
 	return os.RemoveAll(dir)
 }
+
+// IsExist check for existance for directory specified by dir name
+func (s *Storage) IsExist(dir string) bool {
+	info, err := os.Stat(s.join(dir))
+	if err != nil {
+		return false
+	}
+
+	return info.IsDir()
+}

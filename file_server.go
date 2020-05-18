@@ -156,11 +156,11 @@ func (fs *fileServer) RemoveFile(ctx context.Context, req *proto.FileRequest) (*
 }
 
 func (fs *fileServer) CreateStorage(ctx context.Context, req *proto.CreateStorageRequest) (*proto.CreateStorageResponse, error) {
-	status := proto.CreateStorageStatus_Ok
+	status := proto.StorageStatus_Ok
 	sPath := fs.makePath(req.GetName(), false, "")
 	err := fs.storage.Mkdir(sPath)
 	if errors.Is(err, filesystem.ErrAlreadyExist) {
-		status = proto.CreateStorageStatus_AlreadyExist
+		status = proto.StorageStatus_AlreadyExist
 	}
 
 	if err != nil {
@@ -177,5 +177,11 @@ func (fs *fileServer) CreateStorage(ctx context.Context, req *proto.CreateStorag
 
 	return &proto.CreateStorageResponse{
 		Status: status,
+	}, nil
+}
+
+func (fs *fileServer) IsStorageExists(ctx context.Context, req *proto.IsStorageExistsRequest) (*proto.BoolResponse, error) {
+	return &proto.BoolResponse{
+		Flag: fs.storage.IsExist(req.GetName()),
 	}, nil
 }
