@@ -161,9 +161,7 @@ func (fs *fileServer) CreateStorage(ctx context.Context, req *proto.CreateStorag
 	err := fs.storage.Mkdir(sPath)
 	if errors.Is(err, filesystem.ErrAlreadyExist) {
 		status = proto.StorageStatus_AlreadyExist
-	}
-
-	if err != nil {
+	} else if err != nil {
 		return nil, err
 	}
 
