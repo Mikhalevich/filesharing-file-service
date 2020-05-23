@@ -31,10 +31,10 @@ func (fs *fileServer) makePath(storage string, isPermanent bool, file string) st
 	return path.Join(storage, file)
 }
 
-func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest) (*proto.ListResponse, error) {
+func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest, rsp *proto.ListResponse) error {
 	fi, err := fs.storage.Files(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	files := make([]*proto.File, 0, len(fi))
@@ -46,12 +46,13 @@ func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest) (*proto.
 		})
 	}
 
-	return &proto.ListResponse{
+	rsp = &proto.ListResponse{
 		Files: files,
-	}, nil
+	}
+	return nil
 }
 
-func (fs *fileServer) GetFile(req *proto.FileRequest, stream proto.FileService_GetFileServer) error {
+func (fs *fileServer) GetFile(ctx context.Context, req *proto.FileRequest, stream proto.FileService_GetFileStream) error {
 	file, err := fs.storage.File(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
 	if err != nil {
 		return err
@@ -76,7 +77,7 @@ func (fs *fileServer) GetFile(req *proto.FileRequest, stream proto.FileService_G
 	return nil
 }
 
-func contentFromUploadRequest(stream proto.FileService_UploadFileServer) ([]byte, error) {
+func contentFromUploadRequest(stream proto.FileService_UploadFileStream) ([]byte, error) {
 	chunk, err := stream.Recv()
 	if err != nil {
 		return nil, err
@@ -90,7 +91,7 @@ func contentFromUploadRequest(stream proto.FileService_UploadFileServer) ([]byte
 	return content, nil
 }
 
-func metadataFromUploadRequest(stream proto.FileService_UploadFileServer) (*proto.FileRequest, error) {
+func metadataFromUploadRequest(stream proto.FileService_UploadFileStream) (*proto.FileRequest, error) {
 	chunk, err := stream.Recv()
 	if err != nil {
 		return nil, err
@@ -104,7 +105,7 @@ func metadataFromUploadRequest(stream proto.FileService_UploadFileServer) (*prot
 	return metadata, nil
 }
 
-func (fs *fileServer) UploadFile(stream proto.FileService_UploadFileServer) error {
+func (fs *fileServer) UploadFile(ctx context.Context, stream proto.FileService_UploadFileStream) error {
 	metadata, err := metadataFromUploadRequest(stream)
 
 	r, w := io.Pipe()
@@ -142,44 +143,48 @@ func (fs *fileServer) UploadFile(stream proto.FileService_UploadFileServer) erro
 		return err
 	}
 
-	stream.SendAndClose(&proto.File{
+	stream.SendMsg(&proto.File{
 		Name:    file.Name(),
 		Size:    0,
 		ModTime: 0,
 	})
+	stream.Close()
 	return nil
 }
 
-func (fs *fileServer) RemoveFile(ctx context.Context, req *proto.FileRequest) (*proto.EmptyResponse, error) {
+func (fs *fileServer) RemoveFile(ctx context.Context, req *proto.FileRequest, rsp *proto.EmptyResponse) error {
 	err := fs.storage.Remove(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
-	return &proto.EmptyResponse{}, err
+	rsp = &proto.EmptyResponse{}
+	return err
 }
 
-func (fs *fileServer) CreateStorage(ctx context.Context, req *proto.CreateStorageRequest) (*proto.CreateStorageResponse, error) {
+func (fs *fileServer) CreateStorage(ctx context.Context, req *proto.CreateStorageRequest, rsp *proto.CreateStorageResponse) error {
 	status := proto.StorageStatus_Ok
 	sPath := fs.makePath(req.GetName(), false, "")
 	err := fs.storage.Mkdir(sPath)
 	if errors.Is(err, filesystem.ErrAlreadyExist) {
 		status = proto.StorageStatus_AlreadyExist
 	} else if err != nil {
-		return nil, err
+		return err
 	}
 
 	if req.GetWithPermanent() {
 		err = fs.storage.Mkdir(fs.makePath(req.GetName(), true, ""))
 		if err != nil {
 			fs.storage.RemoveDir(sPath)
-			return nil, err
+			return err
 		}
 	}
 
-	return &proto.CreateStorageResponse{
+	rsp = &proto.CreateStorageResponse{
 		Status: status,
-	}, nil
+	}
+	return nil
 }
 
-func (fs *fileServer) IsStorageExists(ctx context.Context, req *proto.IsStorageExistsRequest) (*proto.BoolResponse, error) {
-	return &proto.BoolResponse{
+func (fs *fileServer) IsStorageExists(ctx context.Context, req *proto.IsStorageExistsRequest, rsp *proto.BoolResponse) error {
+	rsp = &proto.BoolResponse{
 		Flag: fs.storage.IsExist(req.GetName()),
-	}, nil
+	}
+	return nil
 }

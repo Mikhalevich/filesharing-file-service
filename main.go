@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"net"
 	"os"
 	"path"
 	"time"
 
 	"github.com/Mikhalevich/file_service/filesystem"
 	"github.com/Mikhalevich/file_service/proto"
+	"github.com/micro/go-micro/v2"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -114,24 +114,42 @@ func main() {
 		}
 	}
 
-	lis, err := net.Listen("tcp", ":50051")
-	if err != nil {
-		logger.Errorln(err)
-		return
-	}
+	service := micro.NewService(
+		micro.Name("fileservice"),
+	)
 
-	s := grpc.NewServer(grpc.UnaryInterceptor(makeUnaryInterceptor(logger)),
-		grpc.StreamInterceptor(makeStreamInterceptor(logger)))
+	service.Init()
 
-	proto.RegisterFileServiceServer(s, &fileServer{
+	proto.RegisterFileServiceHandler(service.Server(), &fileServer{
 		storage:            filesystem.NewStorage(p.root),
 		permanentDirectory: p.permanent,
 		tempStorage:        filesystem.NewStorage(p.temp),
 	})
 
-	err = s.Serve(lis)
+	err = service.Run()
 	if err != nil {
 		logger.Errorln(err)
 		return
 	}
+
+	// lis, err := net.Listen("tcp", ":50051")
+	// if err != nil {
+	// 	logger.Errorln(err)
+	// 	return
+	// }
+
+	// s := grpc.NewServer(grpc.UnaryInterceptor(makeUnaryInterceptor(logger)),
+	// 	grpc.StreamInterceptor(makeStreamInterceptor(logger)))
+
+	// proto.RegisterFileServiceServer(s, &fileServer{
+	// 	storage:            filesystem.NewStorage(p.root),
+	// 	permanentDirectory: p.permanent,
+	// 	tempStorage:        filesystem.NewStorage(p.temp),
+	// })
+
+	// err = s.Serve(lis)
+	// if err != nil {
+	// 	logger.Errorln(err)
+	// 	return
+	// }
 }
