@@ -9,8 +9,8 @@ import (
 	"github.com/Mikhalevich/file_service/filesystem"
 	"github.com/Mikhalevich/file_service/proto"
 	"github.com/micro/go-micro/v2"
+	"github.com/micro/go-micro/v2/server"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 )
 
 type params struct {
@@ -71,23 +71,16 @@ func runCleaner(cleanTime, rootPath, permanentDirectory string, l *logrus.Logger
 	return nil
 }
 
-func makeUnaryInterceptor(logger *logrus.Logger) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		h, err := handler(ctx, req)
-		if err != nil {
-			logger.Errorln(err)
+func makeLoggerWrapper(logger *logrus.Logger) server.HandlerWrapper {
+	return func(fn server.HandlerFunc) server.HandlerFunc {
+		return func(ctx context.Context, req server.Request, rsp interface{}) error {
+			logger.Infof("processing %s", req.Method())
+			err := fn(ctx, req, rsp)
+			if err != nil {
+				logger.Errorln(err)
+			}
+			return err
 		}
-		return h, err
-	}
-}
-
-func makeStreamInterceptor(logger *logrus.Logger) grpc.StreamServerInterceptor {
-	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		err := handler(srv, ss)
-		if err != nil {
-			logger.Errorln(err)
-		}
-		return err
 	}
 }
 
@@ -116,6 +109,7 @@ func main() {
 
 	service := micro.NewService(
 		micro.Name("fileservice"),
+		micro.WrapHandler(makeLoggerWrapper(logger)),
 	)
 
 	service.Init()
@@ -131,25 +125,4 @@ func main() {
 		logger.Errorln(err)
 		return
 	}
-
-	// lis, err := net.Listen("tcp", ":50051")
-	// if err != nil {
-	// 	logger.Errorln(err)
-	// 	return
-	// }
-
-	// s := grpc.NewServer(grpc.UnaryInterceptor(makeUnaryInterceptor(logger)),
-	// 	grpc.StreamInterceptor(makeStreamInterceptor(logger)))
-
-	// proto.RegisterFileServiceServer(s, &fileServer{
-	// 	storage:            filesystem.NewStorage(p.root),
-	// 	permanentDirectory: p.permanent,
-	// 	tempStorage:        filesystem.NewStorage(p.temp),
-	// })
-
-	// err = s.Serve(lis)
-	// if err != nil {
-	// 	logger.Errorln(err)
-	// 	return
-	// }
 }
