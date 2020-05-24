@@ -107,6 +107,9 @@ func metadataFromUploadRequest(stream proto.FileService_UploadFileStream) (*prot
 
 func (fs *fileServer) UploadFile(ctx context.Context, stream proto.FileService_UploadFileStream) error {
 	metadata, err := metadataFromUploadRequest(stream)
+	if err != nil {
+		return err
+	}
 
 	r, w := io.Pipe()
 
