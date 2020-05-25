@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"path"
 
@@ -146,12 +147,13 @@ func (fs *fileServer) UploadFile(ctx context.Context, stream proto.FileService_U
 		return err
 	}
 
-	stream.SendMsg(&proto.File{
+	fmt.Printf("file saved: %s\n", file.Name())
+	stream.Send(&proto.File{
 		Name:    file.Name(),
 		Size:    0,
 		ModTime: 0,
 	})
-	stream.Close()
+	//stream.Close()
 	return nil
 }
 

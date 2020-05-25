@@ -136,6 +136,7 @@ type FileService_UploadFileService interface {
 	RecvMsg(interface{}) error
 	Close() error
 	Send(*FileUploadRequest) error
+	Recv() (*File, error)
 }
 
 type fileServiceUploadFile struct {
@@ -160,6 +161,15 @@ func (x *fileServiceUploadFile) RecvMsg(m interface{}) error {
 
 func (x *fileServiceUploadFile) Send(m *FileUploadRequest) error {
 	return x.stream.Send(m)
+}
+
+func (x *fileServiceUploadFile) Recv() (*File, error) {
+	m := new(File)
+	err := x.stream.Recv(m)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *fileService) RemoveFile(ctx context.Context, in *FileRequest, opts ...client.CallOption) (*EmptyResponse, error) {
@@ -276,6 +286,7 @@ type FileService_UploadFileStream interface {
 	SendMsg(interface{}) error
 	RecvMsg(interface{}) error
 	Close() error
+	Send(*File) error
 	Recv() (*FileUploadRequest, error)
 }
 
@@ -297,6 +308,10 @@ func (x *fileServiceUploadFileStream) SendMsg(m interface{}) error {
 
 func (x *fileServiceUploadFileStream) RecvMsg(m interface{}) error {
 	return x.stream.Recv(m)
+}
+
+func (x *fileServiceUploadFileStream) Send(m *File) error {
+	return x.stream.Send(m)
 }
 
 func (x *fileServiceUploadFileStream) Recv() (*FileUploadRequest, error) {
