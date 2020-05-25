@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"path"
 
@@ -108,7 +109,7 @@ func metadataFromUploadRequest(stream proto.FileService_UploadFileStream) (*prot
 func (fs *fileServer) UploadFile(ctx context.Context, stream proto.FileService_UploadFileStream) error {
 	metadata, err := metadataFromUploadRequest(stream)
 	if err != nil {
-		return err
+		return fmt.Errorf("[UploadFile] metadata error: %w", err)
 	}
 
 	r, w := io.Pipe()
@@ -127,7 +128,7 @@ func (fs *fileServer) UploadFile(ctx context.Context, stream proto.FileService_U
 		}
 
 		if closeError != nil {
-			w.CloseWithError(err)
+			w.CloseWithError(fmt.Errorf("[UploadFile] write error: %w", closeError))
 			return
 		}
 
@@ -136,22 +137,22 @@ func (fs *fileServer) UploadFile(ctx context.Context, stream proto.FileService_U
 
 	file, err := fs.tempStorage.Store("", metadata.GetFileName(), r)
 	if err != nil {
-		return err
+		return fmt.Errorf("[UploadFile] store error: %w", err)
 	}
 
 	dir := fs.makePath(metadata.GetStorage(), metadata.GetIsPermanent(), "")
 	err = fs.storage.Move(file, dir, metadata.GetFileName())
 	if err != nil {
 		file.Remove()
-		return err
+		return fmt.Errorf("[UploadFile] move error: %w", err)
 	}
 
-	stream.SendMsg(&proto.File{
-		Name:    file.Name(),
-		Size:    0,
-		ModTime: 0,
-	})
-	stream.Close()
+	// stream.SendMsg(&proto.File{
+	// 	Name:    file.Name(),
+	// 	Size:    0,
+	// 	ModTime: 0,
+	// })
+	// stream.Close()
 	return nil
 }
 
