@@ -75,6 +75,8 @@ func makeLoggerWrapper(logger *logrus.Logger) server.HandlerWrapper {
 	return func(fn server.HandlerFunc) server.HandlerFunc {
 		return func(ctx context.Context, req server.Request, rsp interface{}) error {
 			logger.Infof("processing %s", req.Method())
+			start := time.Now()
+			defer logger.Infof("end processing %s, time = %v", req.Method(), time.Now().Sub(start))
 			err := fn(ctx, req, rsp)
 			if err != nil {
 				logger.Errorln(err)
