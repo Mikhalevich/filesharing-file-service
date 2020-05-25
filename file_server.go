@@ -47,9 +47,7 @@ func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest, rsp *pro
 		})
 	}
 
-	rsp = &proto.ListResponse{
-		Files: files,
-	}
+	rsp.Files = files
 	return nil
 }
 
