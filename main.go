@@ -14,14 +14,20 @@ import (
 )
 
 type params struct {
-	root      string
-	temp      string
-	permanent string
-	cleanTime string
+	serviceName string
+	root        string
+	temp        string
+	permanent   string
+	cleanTime   string
 }
 
 func loadParams() (*params, error) {
-	rootDir := os.Getenv("ROOT_DIR")
+	serviceName := os.Getenv("FS_SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = "fileservice"
+	}
+
+	rootDir := os.Getenv("FS_ROOT_DIR")
 	if rootDir == "" {
 		rootDir = "storage"
 	}
@@ -31,7 +37,7 @@ func loadParams() (*params, error) {
 		return nil, err
 	}
 
-	tempDir := os.Getenv("TEMP_DIR")
+	tempDir := os.Getenv("FS_TEMP_DIR")
 	if tempDir == "" {
 		tempDir = path.Join(os.TempDir(), "Duplo")
 	}
@@ -41,21 +47,22 @@ func loadParams() (*params, error) {
 		return nil, err
 	}
 
-	permanentDir := os.Getenv("PERMANENT_DIRECTORY")
+	permanentDir := os.Getenv("FS_PERMANENT_DIRECTORY")
 	if permanentDir == "" {
 		permanentDir = "permanent"
 	}
 
-	cleanTime := os.Getenv("CLEAN_TIME")
+	cleanTime := os.Getenv("FS_CLEAN_TIME")
 	if cleanTime == "" {
 		cleanTime = "23:59"
 	}
 
 	return &params{
-		root:      rootDir,
-		temp:      tempDir,
-		permanent: permanentDir,
-		cleanTime: cleanTime,
+		serviceName: serviceName,
+		root:        rootDir,
+		temp:        tempDir,
+		permanent:   permanentDir,
+		cleanTime:   cleanTime,
 	}, nil
 }
 
@@ -99,7 +106,7 @@ func main() {
 		return
 	}
 
-	logger.Infof("running file service with params: root_direcotry = \"%s\", permanent_directory = \"%s\", cleanTime = \"%s\"", p.root, p.permanent, p.cleanTime)
+	logger.Infof("running file service with params: service_name = \"%s\" root_direcotry = \"%s\", permanent_directory = \"%s\", cleanTime = \"%s\"", p.serviceName, p.root, p.permanent, p.cleanTime)
 
 	if p.cleanTime != "" {
 		err = runCleaner(p.cleanTime, p.root, p.permanent, logger)
@@ -110,7 +117,7 @@ func main() {
 	}
 
 	service := micro.NewService(
-		micro.Name("fileservice"),
+		micro.Name(p.serviceName),
 		micro.WrapHandler(makeLoggerWrapper(logger)),
 	)
 
