@@ -82,6 +82,10 @@ func contentFromUploadRequest(stream proto.FileService_UploadFileStream) ([]byte
 		return nil, err
 	}
 
+	if chunk.GetEnd() {
+		return nil, io.EOF
+	}
+
 	content := chunk.GetContent()
 	if content == nil {
 		return nil, errors.New("file content is missing from request")
@@ -145,12 +149,11 @@ func (fs *fileServer) UploadFile(ctx context.Context, stream proto.FileService_U
 		return fmt.Errorf("[UploadFile] move error: %w", err)
 	}
 
-	// stream.SendMsg(&proto.File{
-	// 	Name:    file.Name(),
-	// 	Size:    0,
-	// 	ModTime: 0,
-	// })
-	// stream.Close()
+	stream.Send(&proto.File{
+		Name:    file.Name(),
+		Size:    0,
+		ModTime: 0,
+	})
 	return nil
 }
 
