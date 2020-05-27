@@ -103,11 +103,12 @@ func makeFileName(baseName string, count int) string {
 	return fmt.Sprintf("%s_%d%s", strings.TrimSuffix(baseName, ext), count, ext)
 }
 
-func (d *directory) createUniqueFile(fileName string) (*File, error) {
+func (d *directory) createUniqueFile(baseName string) (*File, error) {
+	fileName := baseName
 	for i := 1; i < 100; i++ {
 		file, err := createFile(path.Join(d.Path, fileName))
 		if os.IsExist(err) {
-			fileName = makeFileName(fileName, i)
+			fileName = makeFileName(baseName, i)
 			continue
 		}
 
@@ -121,7 +122,8 @@ func (d *directory) createUniqueFile(fileName string) (*File, error) {
 	return nil, nil
 }
 
-func (d *directory) moveFile(file *File, fileName string) error {
+func (d *directory) moveFile(file *File, baseName string) error {
+	fileName := baseName
 	for i := 1; i < 100; i++ {
 		p := path.Join(d.Path, fileName)
 		f, err := openFile(p)
@@ -134,7 +136,7 @@ func (d *directory) moveFile(file *File, fileName string) error {
 		}
 		f.Close()
 
-		fileName = makeFileName(fileName, i)
+		fileName = makeFileName(baseName, i)
 	}
 
 	return nil
