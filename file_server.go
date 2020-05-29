@@ -187,7 +187,7 @@ func (fs *fileServer) CreateStorage(ctx context.Context, req *proto.CreateStorag
 
 	if req.GetWithPermanent() {
 		err = fs.storage.Mkdir(fs.makePath(req.GetName(), true, ""))
-		if err != nil {
+		if (err != nil) && !errors.Is(err, filesystem.ErrAlreadyExist) {
 			fs.storage.RemoveDir(sPath)
 			return wrapError("CreateStorage", "create permanent folder error", err)
 		}
