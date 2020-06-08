@@ -7,8 +7,8 @@ import (
 	"io"
 	"path"
 
-	"github.com/Mikhalevich/file_service/filesystem"
-	"github.com/Mikhalevich/file_service/proto"
+	"github.com/Mikhalevich/filesharing-file-service/filesystem"
+	"github.com/Mikhalevich/filesharing-file-service/proto"
 )
 
 type fileServer struct {

@@ -6,8 +6,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/Mikhalevich/file_service/filesystem"
-	"github.com/Mikhalevich/file_service/proto"
+	"github.com/Mikhalevich/filesharing-file-service/filesystem"
+	"github.com/Mikhalevich/filesharing-file-service/proto"
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/server"
 	"github.com/sirupsen/logrus"
