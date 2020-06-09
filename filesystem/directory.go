@@ -90,6 +90,9 @@ func (d *directory) list() (FileInfoList, error) {
 	fiList := make(FileInfoList, 0, len(osFiList))
 
 	for _, osFi := range osFiList {
+		if osFi.IsDir() {
+			continue
+		}
 		fiList = append(fiList, FileInfo{osFi})
 	}
 
