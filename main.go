@@ -8,8 +8,8 @@ import (
 
 	"github.com/Mikhalevich/filesharing-file-service/filesystem"
 	"github.com/Mikhalevich/filesharing-file-service/proto"
-	"github.com/micro/go-micro/v2"
-	"github.com/micro/go-micro/v2/server"
+	"github.com/micro/micro/v3/service"
+	"github.com/micro/micro/v3/service/server"
 	"github.com/sirupsen/logrus"
 )
 
@@ -116,20 +116,20 @@ func main() {
 		}
 	}
 
-	service := micro.NewService(
-		micro.Name(p.serviceName),
-		micro.WrapHandler(makeLoggerWrapper(logger)),
+	srv := service.New(
+		service.Name(p.serviceName),
+		service.WrapHandler(makeLoggerWrapper(logger)),
 	)
 
-	service.Init()
+	srv.Init()
 
-	proto.RegisterFileServiceHandler(service.Server(), &fileServer{
+	proto.RegisterFileServiceHandler(srv.Server(), &fileServer{
 		storage:            filesystem.NewStorage(p.root),
 		permanentDirectory: p.permanent,
 		tempStorage:        filesystem.NewStorage(p.temp),
 	})
 
-	err = service.Run()
+	err = srv.Run()
 	if err != nil {
 		logger.Errorln(err)
 		return
