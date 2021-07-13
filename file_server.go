@@ -8,7 +8,7 @@ import (
 	"path"
 
 	"github.com/Mikhalevich/filesharing-file-service/filesystem"
-	"github.com/Mikhalevich/filesharing-file-service/proto"
+	"github.com/Mikhalevich/filesharing/proto/file"
 )
 
 type fileServer struct {
@@ -36,15 +36,15 @@ func wrapError(context, description string, err error) error {
 	return fmt.Errorf("[%s] %s: %w", context, description, err)
 }
 
-func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest, rsp *proto.ListResponse) error {
+func (fs *fileServer) List(ctx context.Context, req *file.ListRequest, rsp *file.ListResponse) error {
 	fi, err := fs.storage.Files(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""))
 	if err != nil {
 		return wrapError("List", "get files error", err)
 	}
 
-	files := make([]*proto.File, 0, len(fi))
+	files := make([]*file.File, 0, len(fi))
 	for _, v := range fi {
-		files = append(files, &proto.File{
+		files = append(files, &file.File{
 			Name:    v.Name(),
 			Size:    v.Size(),
 			ModTime: v.ModTime().Unix(),
@@ -55,18 +55,18 @@ func (fs *fileServer) List(ctx context.Context, req *proto.ListRequest, rsp *pro
 	return nil
 }
 
-func (fs *fileServer) GetFile(ctx context.Context, req *proto.FileRequest, stream proto.FileService_GetFileStream) error {
-	file, err := fs.storage.File(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
+func (fs *fileServer) GetFile(ctx context.Context, req *file.FileRequest, stream file.FileService_GetFileStream) error {
+	f, err := fs.storage.File(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
 	if err != nil {
 		return wrapError("GetFile", "get file error", err)
 	}
-	defer file.Close()
+	defer f.Close()
 
 	buf := make([]byte, 4096)
 	for {
-		n, err := file.Read(buf)
+		n, err := f.Read(buf)
 		if n > 0 {
-			stream.Send(&proto.Chunk{
+			stream.Send(&file.Chunk{
 				Content: buf[:n],
 			})
 		}
@@ -80,7 +80,7 @@ func (fs *fileServer) GetFile(ctx context.Context, req *proto.FileRequest, strea
 	return nil
 }
 
-func contentFromUploadRequest(stream proto.FileService_UploadFileStream) ([]byte, error) {
+func contentFromUploadRequest(stream file.FileService_UploadFileStream) ([]byte, error) {
 	chunk, err := stream.Recv()
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func contentFromUploadRequest(stream proto.FileService_UploadFileStream) ([]byte
 	return content, nil
 }
 
-func metadataFromUploadRequest(stream proto.FileService_UploadFileStream) (*proto.FileRequest, error) {
+func metadataFromUploadRequest(stream file.FileService_UploadFileStream) (*file.FileRequest, error) {
 	chunk, err := stream.Recv()
 	if err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func metadataFromUploadRequest(stream proto.FileService_UploadFileStream) (*prot
 	return metadata, nil
 }
 
-func (fs *fileServer) UploadFile(ctx context.Context, stream proto.FileService_UploadFileStream) error {
+func (fs *fileServer) UploadFile(ctx context.Context, stream file.FileService_UploadFileStream) error {
 	metadata, err := metadataFromUploadRequest(stream)
 	if err != nil {
 		return wrapError("UploadFile", "metadata error", err)
@@ -141,20 +141,20 @@ func (fs *fileServer) UploadFile(ctx context.Context, stream proto.FileService_U
 		w.Close()
 	}()
 
-	file, err := fs.tempStorage.Store("", metadata.GetFileName(), r)
+	f, err := fs.tempStorage.Store("", metadata.GetFileName(), r)
 	if err != nil {
 		return wrapError("UploadFile", "store error", err)
 	}
 
 	dir := fs.makePath(metadata.GetStorage(), metadata.GetIsPermanent(), "")
-	err = fs.storage.Move(file, dir, metadata.GetFileName())
+	err = fs.storage.Move(f, dir, metadata.GetFileName())
 	if err != nil {
-		file.Remove()
+		f.Remove()
 		return wrapError("UploadFile", "move error", err)
 	}
 
-	err = stream.Send(&proto.File{
-		Name:    file.Name(),
+	err = stream.Send(&file.File{
+		Name:    f.Name(),
 		Size:    0,
 		ModTime: 0,
 	})
@@ -166,7 +166,7 @@ func (fs *fileServer) UploadFile(ctx context.Context, stream proto.FileService_U
 	return nil
 }
 
-func (fs *fileServer) RemoveFile(ctx context.Context, req *proto.FileRequest, rsp *proto.EmptyResponse) error {
+func (fs *fileServer) RemoveFile(ctx context.Context, req *file.FileRequest, rsp *file.EmptyResponse) error {
 	err := fs.storage.Remove(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
 	if err != nil {
 		return wrapError("RemoveFile", "remove file error", err)
@@ -174,13 +174,13 @@ func (fs *fileServer) RemoveFile(ctx context.Context, req *proto.FileRequest, rs
 	return nil
 }
 
-func (fs *fileServer) CreateStorage(ctx context.Context, req *proto.CreateStorageRequest, rsp *proto.CreateStorageResponse) error {
-	status := proto.StorageStatus_Ok
+func (fs *fileServer) CreateStorage(ctx context.Context, req *file.CreateStorageRequest, rsp *file.CreateStorageResponse) error {
+	status := file.StorageStatus_Ok
 	sPath := fs.makePath(req.GetName(), false, "")
 
 	err := fs.storage.Mkdir(sPath)
 	if errors.Is(err, filesystem.ErrAlreadyExist) {
-		status = proto.StorageStatus_AlreadyExist
+		status = file.StorageStatus_AlreadyExist
 	} else if err != nil {
 		return wrapError("CreateStorage", "create folder error", err)
 	}
@@ -197,7 +197,7 @@ func (fs *fileServer) CreateStorage(ctx context.Context, req *proto.CreateStorag
 	return nil
 }
 
-func (fs *fileServer) IsStorageExists(ctx context.Context, req *proto.IsStorageExistsRequest, rsp *proto.BoolResponse) error {
+func (fs *fileServer) IsStorageExists(ctx context.Context, req *file.IsStorageExistsRequest, rsp *file.BoolResponse) error {
 	rsp.Flag = fs.storage.IsExist(req.GetName())
 	return nil
 }

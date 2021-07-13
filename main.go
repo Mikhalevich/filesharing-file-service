@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Mikhalevich/filesharing-file-service/filesystem"
-	"github.com/Mikhalevich/filesharing-file-service/proto"
+	"github.com/Mikhalevich/filesharing/proto/file"
 	"github.com/asim/go-micro/v3"
 	"github.com/asim/go-micro/v3/server"
 	"github.com/sirupsen/logrus"
@@ -123,7 +123,7 @@ func main() {
 
 	srv.Init()
 
-	proto.RegisterFileServiceHandler(srv.Server(), &fileServer{
+	file.RegisterFileServiceHandler(srv.Server(), &fileServer{
 		storage:            filesystem.NewStorage(p.root),
 		permanentDirectory: p.permanent,
 		tempStorage:        filesystem.NewStorage(p.temp),
