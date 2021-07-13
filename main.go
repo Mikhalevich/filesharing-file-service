@@ -8,8 +8,8 @@ import (
 
 	"github.com/Mikhalevich/filesharing-file-service/filesystem"
 	"github.com/Mikhalevich/filesharing-file-service/proto"
-	"github.com/micro/micro/v3/service"
-	"github.com/micro/micro/v3/service/server"
+	"github.com/asim/go-micro/v3"
+	"github.com/asim/go-micro/v3/server"
 	"github.com/sirupsen/logrus"
 )
 
@@ -116,9 +116,9 @@ func main() {
 		}
 	}
 
-	srv := service.New(
-		service.Name(p.serviceName),
-		service.WrapHandler(makeLoggerWrapper(logger)),
+	srv := micro.NewService(
+		micro.Name(p.serviceName),
+		micro.WrapHandler(makeLoggerWrapper(logger)),
 	)
 
 	srv.Init()
