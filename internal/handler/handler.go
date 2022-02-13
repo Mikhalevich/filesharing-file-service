@@ -161,7 +161,7 @@ func (fs *handler) UploadFile(ctx context.Context, stream file.FileService_Uploa
 	return nil
 }
 
-func (fs *handler) RemoveFile(ctx context.Context, req *file.FileRequest, rsp *file.EmptyResponse) error {
+func (fs *handler) RemoveFile(ctx context.Context, req *file.FileRequest, rsp *file.RemoveFileResponse) error {
 	err := fs.storage.Remove(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
 	if err != nil {
 		return httperror.NewInternalError("remove file error").WithError(err)
@@ -170,25 +170,24 @@ func (fs *handler) RemoveFile(ctx context.Context, req *file.FileRequest, rsp *f
 }
 
 func (fs *handler) CreateStorage(ctx context.Context, req *file.CreateStorageRequest, rsp *file.CreateStorageResponse) error {
-	status := file.StorageStatus_Ok
 	sPath := fs.makePath(req.GetName(), false, "")
 
-	err := fs.storage.Mkdir(sPath)
-	if errors.Is(err, filesystem.ErrAlreadyExist) {
-		status = file.StorageStatus_AlreadyExist
-	} else if err != nil {
+	if err := fs.storage.Mkdir(sPath); err != nil {
+		if errors.Is(err, filesystem.ErrAlreadyExist) {
+			return httperror.NewAlreadyExistError("storage already exist")
+		}
 		return httperror.NewInternalError("create folder error").WithError(err)
 	}
 
 	if req.GetWithPermanent() {
-		err = fs.storage.Mkdir(fs.makePath(req.GetName(), true, ""))
-		if (err != nil) && !errors.Is(err, filesystem.ErrAlreadyExist) {
-			fs.storage.RemoveDir(sPath)
-			return httperror.NewInternalError("create permanent folder error").WithError(err)
+		if err := fs.storage.Mkdir(fs.makePath(req.GetName(), true, "")); err != nil {
+			if !errors.Is(err, filesystem.ErrAlreadyExist) {
+				fs.storage.RemoveDir(sPath)
+				return httperror.NewInternalError("create permanent folder error").WithError(err)
+			}
 		}
 	}
 
-	rsp.Status = status
 	return nil
 }
 

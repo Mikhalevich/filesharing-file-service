@@ -55,8 +55,8 @@ github.com/Mikhalevich/filesharing v0.0.0-20210823194614-91f994d1f2d9/go.mod h1:
 github.com/Mikhalevich/filesharing v0.0.0-20211127203421-97a4175b1cc5/go.mod h1:8BwDtc6krmA2IzgqseP3T5mFt/9V6cYEZhdZcCRNp+w=
 github.com/Mikhalevich/filesharing v0.0.0-20220101154653-d477e2ad8e34/go.mod h1:d/SKMN13+41GjPlSoEnZHuyS2zYAP5B0zqmbebFGslU=
 github.com/Mikhalevich/filesharing v0.0.0-20220212202806-b5432a5805ee/go.mod h1:yU7rIB+8V78t1ZpN4PfBe41V+SEDZIQbbgphZwM277A=
-github.com/Mikhalevich/filesharing v0.0.0-20220213094909-44529766c551 h1:PgnFGKQHLwePLiaZMF28sPMeVgukyT/MdmyjhbCrI3E=
-github.com/Mikhalevich/filesharing v0.0.0-20220213094909-44529766c551/go.mod h1:VWu1RSoD9RzlGHJCIB7vl6LVItYhpbJYQ7aiLXnoVIk=
+github.com/Mikhalevich/filesharing v0.0.0-20220213105542-ea44cf01b515 h1:1dEWwBDX50sFrb4FVPvIKav8HE3JSTXRDmsywbihhXU=
+github.com/Mikhalevich/filesharing v0.0.0-20220213105542-ea44cf01b515/go.mod h1:VWu1RSoD9RzlGHJCIB7vl6LVItYhpbJYQ7aiLXnoVIk=
 github.com/Mikhalevich/filesharing-auth-service v0.0.0-20210713170333-b9322ac05455/go.mod h1:ap44UWKjGuBvSPXkR37bd3dbBCR9UtRi2aDygV94KZ0=
 github.com/Mikhalevich/filesharing-auth-service v0.0.0-20210713200756-ad899200b5e7/go.mod h1:DNF02bXuiThIt0StUx1KANsUdWbKGVqmYExFbwbkZAs=
 github.com/Mikhalevich/filesharing-auth-service v0.0.0-20210820132202-552026a6981e/go.mod h1:z/JLjelIkd1Mqd0k3xb1gJfWr1ZgyUkTd8hTm4QscyQ=
