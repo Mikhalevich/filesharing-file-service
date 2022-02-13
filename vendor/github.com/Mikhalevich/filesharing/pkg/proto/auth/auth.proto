@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "github.com/Mikhalevich/filesharing/pkg/proto/auth";
+
+service AuthService {
+  rpc Create(CreateUserRequest) returns (CreateUserResponse) {}
+  rpc Auth(AuthUserRequest) returns (AuthUserResponse) {}
+  rpc AuthPublicUser(AuthPublicUserRequest) returns (AuthPublicUserResponse) {}
+}
+
+message User {
+    int64 id = 1;
+    string name = 2;
+    string email = 3;
+    string password = 4;
+    bool public = 5;
+}
+
+message Token {
+    string value = 1;
+}
+
+message CreateUserRequest {
+    User user = 1;
+}
+
+message CreateUserResponse {
+    Token token = 1;
+}
+
+message AuthUserRequest {
+    User user = 1;
+}
+
+message AuthUserResponse {
+    Token token = 1;
+}
+
+message AuthPublicUserRequest {
+    string name = 1;
+}
+
+message AuthPublicUserResponse {
+    Token token = 2;
+}
