@@ -3,11 +3,11 @@ package handler
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"path"
 
 	"github.com/Mikhalevich/filesharing-file-service/internal/filesystem"
+	"github.com/Mikhalevich/filesharing/pkg/httperror"
 	"github.com/Mikhalevich/filesharing/pkg/proto/file"
 )
 
@@ -32,14 +32,10 @@ func (fs *handler) makePath(storage string, isPermanent bool, file string) strin
 	return path.Join(storage, file)
 }
 
-func wrapError(context, description string, err error) error {
-	return fmt.Errorf("[%s] %s: %w", context, description, err)
-}
-
 func (fs *handler) List(ctx context.Context, req *file.ListRequest, rsp *file.ListResponse) error {
 	fi, err := fs.storage.Files(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""))
 	if err != nil {
-		return wrapError("List", "get files error", err)
+		return httperror.NewInternalError("get files error").WithError(err)
 	}
 
 	files := make([]*file.File, 0, len(fi))
@@ -58,7 +54,7 @@ func (fs *handler) List(ctx context.Context, req *file.ListRequest, rsp *file.Li
 func (fs *handler) GetFile(ctx context.Context, req *file.FileRequest, stream file.FileService_GetFileStream) error {
 	f, err := fs.storage.File(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
 	if err != nil {
-		return wrapError("GetFile", "get file error", err)
+		return httperror.NewInternalError("get file error").WithError(err)
 	}
 	defer f.Close()
 
@@ -71,10 +67,11 @@ func (fs *handler) GetFile(ctx context.Context, req *file.FileRequest, stream fi
 			})
 		}
 
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return wrapError("GetFile", "send data error", err)
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return httperror.NewInternalError("send data error").WithError(err)
 		}
 	}
 	return nil
@@ -115,7 +112,7 @@ func metadataFromUploadRequest(stream file.FileService_UploadFileStream) (*file.
 func (fs *handler) UploadFile(ctx context.Context, stream file.FileService_UploadFileStream) error {
 	metadata, err := metadataFromUploadRequest(stream)
 	if err != nil {
-		return wrapError("UploadFile", "metadata error", err)
+		return httperror.NewInternalError("metadate error").WithError(err)
 	}
 
 	r, w := io.Pipe()
@@ -124,9 +121,10 @@ func (fs *handler) UploadFile(ctx context.Context, stream file.FileService_Uploa
 		var closeError error
 		for {
 			content, err := contentFromUploadRequest(stream)
-			if err == io.EOF {
-				break
-			} else if err != nil {
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					break
+				}
 				closeError = err
 				break
 			}
@@ -134,7 +132,7 @@ func (fs *handler) UploadFile(ctx context.Context, stream file.FileService_Uploa
 		}
 
 		if closeError != nil {
-			w.CloseWithError(wrapError("UploadFile", "write error", closeError))
+			w.CloseWithError(httperror.NewInternalError("close file error").WithError(closeError))
 			return
 		}
 
@@ -143,24 +141,21 @@ func (fs *handler) UploadFile(ctx context.Context, stream file.FileService_Uploa
 
 	f, err := fs.tempStorage.Store("", metadata.GetFileName(), r)
 	if err != nil {
-		return wrapError("UploadFile", "store error", err)
+		return httperror.NewInternalError("store error").WithError(err)
 	}
 
 	dir := fs.makePath(metadata.GetStorage(), metadata.GetIsPermanent(), "")
-	err = fs.storage.Move(f, dir, metadata.GetFileName())
-	if err != nil {
+	if err := fs.storage.Move(f, dir, metadata.GetFileName()); err != nil {
 		f.Remove()
-		return wrapError("UploadFile", "move error", err)
+		return httperror.NewInternalError("move error").WithError(err)
 	}
 
-	err = stream.Send(&file.File{
+	if err := stream.Send(&file.File{
 		Name:    f.Name(),
 		Size:    0,
 		ModTime: 0,
-	})
-
-	if err != nil {
-		return wrapError("UploadFile", "send file response error", err)
+	}); err != nil {
+		return httperror.NewInternalError("send file response error").WithError(err)
 	}
 
 	return nil
@@ -169,7 +164,7 @@ func (fs *handler) UploadFile(ctx context.Context, stream file.FileService_Uploa
 func (fs *handler) RemoveFile(ctx context.Context, req *file.FileRequest, rsp *file.EmptyResponse) error {
 	err := fs.storage.Remove(fs.makePath(req.GetStorage(), req.GetIsPermanent(), ""), req.GetFileName())
 	if err != nil {
-		return wrapError("RemoveFile", "remove file error", err)
+		return httperror.NewInternalError("remove file error").WithError(err)
 	}
 	return nil
 }
@@ -182,14 +177,14 @@ func (fs *handler) CreateStorage(ctx context.Context, req *file.CreateStorageReq
 	if errors.Is(err, filesystem.ErrAlreadyExist) {
 		status = file.StorageStatus_AlreadyExist
 	} else if err != nil {
-		return wrapError("CreateStorage", "create folder error", err)
+		return httperror.NewInternalError("create folder error").WithError(err)
 	}
 
 	if req.GetWithPermanent() {
 		err = fs.storage.Mkdir(fs.makePath(req.GetName(), true, ""))
 		if (err != nil) && !errors.Is(err, filesystem.ErrAlreadyExist) {
 			fs.storage.RemoveDir(sPath)
-			return wrapError("CreateStorage", "create permanent folder error", err)
+			return httperror.NewInternalError("create permanent folder error").WithError(err)
 		}
 	}
 

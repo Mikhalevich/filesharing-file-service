@@ -3,6 +3,7 @@ github.com/Microsoft/go-winio
 github.com/Microsoft/go-winio/pkg/guid
 # github.com/Mikhalevich/filesharing v0.0.0-20220213094909-44529766c551
 ## explicit
+github.com/Mikhalevich/filesharing/pkg/httperror
 github.com/Mikhalevich/filesharing/pkg/proto/auth
 github.com/Mikhalevich/filesharing/pkg/proto/file
 github.com/Mikhalevich/filesharing/pkg/service
